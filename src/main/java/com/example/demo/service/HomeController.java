@@ -18,6 +18,6 @@ public class HomeController {
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
-        return "Greetings from Spring Boot! V1" + ip;
+        return "Greetings from Spring Boot! V1 from dev" + ip;
     }
 }
