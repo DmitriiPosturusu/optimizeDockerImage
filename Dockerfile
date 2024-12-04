@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline -B
 
 
 COPY src /app/src
-RUN mvn clean package -DskipTests
+RUN mvn clean install
 
 #Stage 2 runtime
 FROM amazoncorretto:17-alpine
