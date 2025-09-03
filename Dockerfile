@@ -1,18 +1,34 @@
-#Stage 1 build
-FROM maven:3.8.7-eclipse-temurin-17 as builder
+# Build
+FROM maven:3.9.9-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
-COPY pom.xml /app
-COPY src /app/src
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 
-RUN mvn clean package -DskipTests
+COPY src ./src
 
-#Stage 2 runtime
-FROM amazoncorretto:17-alpine
+RUN mvn package -DskipTests -B
+
+# Test
+FROM maven:3.9.9-eclipse-temurin-17 AS tester
 
 WORKDIR /app
 
-COPY --from=builder /app/target/*.jar application.jar
+COPY --from=builder /app /app
 
-ENTRYPOINT ["java","-Xmx2048M", "-jar", "/application.jar"]
+RUN mvn test
+
+
+# Runtime
+FROM eclipse-temurin:17-jre-jammy AS runtime
+WORKDIR /app
+
+RUN addgroup spring && adduser spring --ingroup spring && mkdir -p /var/log/dice && chown -R spring:spring /var/log/dice
+
+USER spring:spring
+
+COPY --from=builder /app/target/*.jar app.jar
+
+ENTRYPOINT ["java","-jar","/app/app.jar"]
+
